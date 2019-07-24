@@ -6,14 +6,8 @@ export class SqlUtil {
     }
     const lines = text.split(/\n/g);
     const str = lines[row];
-    const left = str.slice(0, column + 1).search(/\S+$/);
-    const right = str.slice(column).search(/\s/);
-
-    if (right < 0) {
-      return str.slice(left);
-    }
-
-    return str.slice(left, right + column);
+    const split = str.slice(0, column).split(/\s+/g);
+    return split[split.length - 1].trim();
   }
 
   public static isAlias(text: string, search: string): boolean {
@@ -21,16 +15,15 @@ export class SqlUtil {
     if (split.length !== 2) {
       return false;
     }
-    const match = ' ' + split[0] + ' ';
-    return text.indexOf(match) !== -1;
+    const regex = new RegExp(`(\\"*\\w+\\-*\\w*\\"*)\\.(\\w+\\-*\\w*)\\s+(${split[0]})(\\s+|$)`);
+    return text.search(regex) !== -1;
   }
 
   public static getTableByAlias(text: string, alias: string): string {
     alias = alias.split('.')[0];
-    const split = text.split(' ' + alias + ' ');
-    const first = split[0].trim();
-    const left = first.slice(0, first.length + 1).search(/\S+$/);
-    return first.slice(left);
+    const regex = new RegExp(`(\\"*\\w+\\-*\\w*\\"*)\\.(\\w+\\-*\\w*)\\s+(${alias})(\\s+|$)`);
+    const match = text.match(regex);
+    return match[1] + '.' + match[2];
   }
 
 }
